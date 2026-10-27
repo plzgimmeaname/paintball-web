@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Paintball Arena</title>
+  <meta name="description" content="A 2-player paintball platform fighter. Play locally, against the CPU, or online with a join code.">
+  <meta name="theme-color" content="#11112a">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='28' cy='34' r='22' fill='%23ff4d6d' stroke='%2317162b' stroke-width='5'/%3E%3Ccircle cx='46' cy='18' r='9' fill='%233a86ff' stroke='%2317162b' stroke-width='4'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+  <script type="module" src="src/main.js"></script>
+</head>
+<body>
+  <div id="stage">
+    <canvas id="game" aria-label="Game view"></canvas>
+  </div>
+
+  <div id="ui">
+    <!-- main menu -->
+    <section class="screen" id="menu">
+      <div class="panel menu-panel">
+        <h1 class="logo"><span class="l1">Paintball</span><span class="l2">Arena</span></h1>
+        <p class="tagline">Two blobs. Seven silly weapons. Last one clean wins.</p>
+        <div class="menu-grid">
+          <button class="btn big primary" data-action="local"><span>Local 2-Player</span><small>Share one keyboard</small></button>
+          <button class="btn big" data-action="cpu"><span>Vs CPU</span><small>Practice solo</small></button>
+          <button class="btn big online" data-action="host"><span>Host Online</span><small>Get a join code</small></button>
+          <button class="btn big online" data-action="join"><span>Join Online</span><small>Enter a friend's code</small></button>
+        </div>
+        <button class="btn ghost small" data-action="howto">How to play</button>
+        <p class="touch-note" id="touch-note">A keyboard is needed to play.</p>
+      </div>
+    </section>
+
+    <!-- match setup / online lobby -->
+    <section class="screen" id="setup">
+      <div class="panel setup-panel">
+        <header class="setup-head">
+          <button class="btn ghost small" data-action="back">← Back</button>
+          <h2 id="setup-title">Match Setup</h2>
+          <span class="spacer"></span>
+        </header>
+
+        <div class="online-bar hidden" id="online-bar">
+          <div class="code-block" id="code-block">
+            <span class="label">Join code</span>
+            <span class="code" id="host-code">·····</span>
+            <div class="code-actions">
+              <button class="btn small" data-action="copy-code">Copy code</button>
+              <button class="btn small" data-action="copy-link">Copy invite link</button>
+            </div>
+          </div>
+          <div class="status" id="net-status"><span class="dot"></span><span class="txt">Connecting…</span></div>
+        </div>
+
+        <h3 class="section-label">Arena</h3>
+        <div class="map-list" id="map-list"></div>
+
+        <div class="pickers">
+          <div class="picker" id="picker-0"></div>
+          <div class="picker" id="picker-1"></div>
+        </div>
+
+        <footer class="setup-foot">
+          <div class="foot-opts">
+            <div class="rounds" id="rounds">
+              <span class="section-label inline">First to</span>
+              <div class="seg" id="rounds-seg"></div>
+            </div>
+            <div class="rounds hidden" id="difficulty">
+              <span class="section-label inline">CPU</span>
+              <div class="seg" id="difficulty-seg"></div>
+            </div>
+          </div>
+          <span class="wait-note hidden" id="wait-note">Waiting for the host to start…</span>
+          <button class="btn primary big fight" id="fight-btn" data-action="fight">Fight!</button>
+        </footer>
+      </div>
+    </section>
+
+    <!-- join with code -->
+    <section class="screen" id="join">
+      <div class="panel narrow">
+        <h2>Join a Game</h2>
+        <p class="muted">Ask your friend for the 5-letter code shown on their screen.</p>
+        <form id="join-form" autocomplete="off">
+          <input id="join-input" class="code-input" maxlength="5" placeholder="ABCDE" spellcheck="false" autocapitalize="characters" aria-label="Join code">
+          <button class="btn primary big" type="submit">Join</button>
+        </form>
+        <p class="join-status" id="join-status"></p>
+        <button class="btn ghost small" data-action="menu">← Back</button>
+      </div>
+    </section>
+
+    <!-- how to play -->
+    <section class="screen" id="howto">
+      <div class="panel howto-panel">
+        <h2>How to Play</h2>
+        <p class="muted">Every hit covers your opponent in paint. Fill their meter to 100% to take the round, or have less paint on you when the clock runs out.</p>
+        <div class="controls">
+          <div class="ctrl p1">
+            <h4>Player 1 · Red</h4>
+            <p><kbd>A</kbd><kbd>D</kbd> move</p>
+            <p><kbd>W</kbd> jump (tap again to double jump)</p>
+            <p><kbd>S</kbd> or <kbd>Space</kbd> shoot</p>
+          </div>
+          <div class="ctrl p2">
+            <h4>Player 2 · Blue</h4>
+            <p><kbd>←</kbd><kbd>→</kbd> move</p>
+            <p><kbd>↑</kbd> jump (tap again to double jump)</p>
+            <p><kbd>↓</kbd> or <kbd>Enter</kbd> shoot</p>
+          </div>
+        </div>
+        <ul class="tips">
+          <li>Against the CPU or online, either set of keys works for you.</li>
+          <li>Thin platforms can be jumped through from below.</li>
+          <li>Hold jump to go higher, tap for a short hop.</li>
+          <li>On City Ruins, falling into the gap paints you out instantly.</li>
+          <li><kbd>Esc</kbd> pauses (or leaves an online match).</li>
+        </ul>
+        <button class="btn primary" data-action="menu">Got it</button>
+      </div>
+    </section>
+
+    <!-- pause -->
+    <section class="screen" id="pause">
+      <div class="panel narrow">
+        <h2 id="pause-title">Paused</h2>
+        <div class="stack">
+          <button class="btn primary big" data-action="resume">Resume</button>
+          <button class="btn big" data-action="quit">Quit to Menu</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- match result -->
+    <section class="screen" id="result">
+      <div class="panel narrow result-panel">
+        <p class="eyebrow">Match over</p>
+        <h2 class="result-title" id="result-title">Red Wins!</h2>
+        <p class="result-score" id="result-score">3 – 1</p>
+        <div class="stack" id="result-actions"></div>
+      </div>
+    </section>
+  </div>
+
+  <div class="corner">
+    <button class="icon-btn" id="mute-btn" aria-label="Toggle sound" title="Sound"></button>
+    <button class="icon-btn" id="fs-btn" aria-label="Toggle fullscreen" title="Fullscreen">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+    </button>
+  </div>
+  <div id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
