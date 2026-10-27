@@ -2,15 +2,6 @@
 
 A 2-player paintball platform fighter that runs in the browser. Play on one keyboard, against the CPU, or online with a friend using a 5-letter join code.
 
-## Play it on GitHub Pages
-
-1. Push this folder to a GitHub repository.
-2. In the repo, open **Settings → Pages**.
-3. Under **Build and deployment**, pick **Deploy from a branch**, choose `main` and `/ (root)`, then save.
-4. After a minute the game is live at `https://<your-username>.github.io/<repo-name>/`.
-
-There's no build step. The site is plain HTML, CSS and JavaScript modules.
-
 ## Run it locally
 
 ES modules don't load from `file://`, so serve the folder:
