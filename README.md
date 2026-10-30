@@ -27,7 +27,18 @@ Then open http://localhost:8000.
 - The other clicks **Join Online** and types the code.
 - The host picks the arena and round count. Each player picks their own weapon.
 
-The connection is peer-to-peer over WebRTC using [PeerJS](https://peerjs.com). Its free public broker only introduces the two browsers to each other, so you don't need a server. The host's browser runs the match and streams it to the guest. A few strict networks (some school or corporate Wi-Fi) block peer-to-peer connections. If joining keeps failing, try a different network.
+Online rooms run through a [Firebase Realtime Database](https://firebase.google.com/docs/database). The host's browser runs the match and streams it to the guest through the database, so there's no game server to deploy.
+
+### Firebase setup (one time)
+
+1. Create a project at https://console.firebase.google.com.
+2. **Build → Authentication → Sign-in method**: enable **Anonymous**.
+3. **Build → Realtime Database**: create a database (locked mode is fine).
+4. In the database's **Rules** tab, paste the contents of `database.rules.json` and publish. Or, with the Firebase CLI: `firebase deploy --only database`.
+5. **Project settings → Your apps**: add a web app and copy its config values into `src/firebase-config.js`. Make sure `databaseURL` is filled in.
+6. If you host on GitHub Pages, add `<your-username>.github.io` under **Authentication → Settings → Authorized domains**.
+
+The config values are public by design. The database rules only let a room's host change the room, and only let the current guest send moves into it. Rooms are deleted automatically when the host leaves or closes the tab.
 
 ## Controls
 
@@ -47,7 +58,9 @@ src/main.js     ui flow, input, game loop, online session
 src/sim.js      game rules and physics (fixed 60 ticks/sec)
 src/render.js   canvas drawing: arenas, characters, paint, hud
 src/bot.js      cpu opponent
-src/net.js      peerjs join-code networking
+src/net.js      firebase join-code rooms
+src/firebase-config.js  your firebase web app config
 src/audio.js    synthesized sound effects
 src/data.js     arenas (dictionary), weapons (list), cpu difficulty levels
+database.rules.json  firebase realtime database security rules
 ```

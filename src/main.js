@@ -389,7 +389,7 @@ function openSetup(mode) {
 }
 
 function startHosting() {
-  if (!netAvailable()) { toast("Online play couldn't load. Check your connection and reload."); return; }
+  if (!netAvailable()) { toast("Online play isn't set up yet. Add a Firebase config to src/firebase-config.js."); return; }
   lobby.mode = 'host';
   lobby.connected = false;
   lobby.arenaId = prefs.arenaId;
@@ -404,7 +404,7 @@ function startHosting() {
 }
 
 function joinGame(raw) {
-  if (!netAvailable()) { joinStatus("Online play couldn't load. Check your connection and reload.", true); return; }
+  if (!netAvailable()) { joinStatus("Online play isn't set up yet. Add a Firebase config to src/firebase-config.js.", true); return; }
   const code = cleanCode(raw);
   if (code.length !== 5) { joinStatus('Codes are 5 characters long.', true); return; }
   lobby.mode = 'guest';
@@ -473,12 +473,6 @@ net.onData = m => {
         session.remoteInput = unpackInput(m.in && m.in[0]);
         handleEvents(m.ev || [], false);
       }
-      break;
-    case 'full':
-      net.close();
-      lobby.connected = false;
-      showScreen('join');
-      joinStatus('That game already has two players.', true);
       break;
   }
 };
